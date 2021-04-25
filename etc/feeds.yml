@@ -1,0 +1,25 @@
+sources:
+  coingecko:
+    url: "https://api.coingecko.com/api/v3/simple/price?ids=${coin}&vs_currencies=${base}"
+    arguments:
+      - "base"
+      - "coin"
+    method: get
+    parser:
+      type: json
+      path: "[${coin}][${base}]"
+feeds:
+  testfeed:
+    name: "BTC,ETH/USD"
+    aggregation:
+      method: average
+      sources:
+        # These sources don't make sense, they are just an example to test aggregation
+        - source: coingecko
+          arguments:
+            base: "usd"
+            coin: "ethereum"
+        - source: coingecko
+          arguments:
+            base: "usd"
+            coin: "bitcoin"
