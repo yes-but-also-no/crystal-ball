@@ -6,7 +6,7 @@ import (
 	"gopkg.in/yaml.v3"
 	"io"
 	"strings"
-  "time"
+	"time"
 )
 
 // ParseRequests takes Reader, and uses yaml library to decode file into Requests struct
