@@ -1,0 +1,22 @@
+name: "Build releases as Docker images"
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-releases:
+    name: "Build Docker image"
+    runs-on: ubuntu-20.04
+    steps:
+      - name: "Checkout Github repo"
+        uses: actions/checkout@v2
+      - name: "Build and push Docker image to GitHub Container Registry"
+        uses: docker/build-push-action@v1
+        with:
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: ghcr.io
+          repository: orakurudata/crystal-ball
+          tag_with_ref: true
