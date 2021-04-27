@@ -3,10 +3,20 @@ package configuration
 import (
 	"errors"
 	"fmt"
+	"github.com/ethereum/go-ethereum/crypto"
 	"gopkg.in/yaml.v3"
 	"io"
 	"strings"
 	"time"
+)
+
+var (
+	ErrUnsupportedAggregationMethod = errors.New("unsupported aggregation method")
+	ErrUnknownSource                = errors.New("unknown source")
+	ErrInvalidSourceArguments       = errors.New("invalid source arguments")
+	ErrNoSources                    = errors.New("no sources")
+	ErrInvalidSourceMethod          = errors.New("invalid source method")
+	ErrInvalidParserType            = errors.New("invalid parser type")
 )
 
 // ParseRequests takes Reader, and uses yaml library to decode file into Requests struct
@@ -29,14 +39,17 @@ func ParseRequests(file io.Reader) (*Requests, error) {
 	return r, nil
 }
 
-var (
-	ErrUnsupportedAggregationMethod = errors.New("unsupported aggregation method")
-	ErrUnknownSource                = errors.New("unknown source")
-	ErrInvalidSourceArguments       = errors.New("invalid source arguments")
-	ErrNoSources                    = errors.New("no sources")
-	ErrInvalidSourceMethod          = errors.New("invalid source method")
-	ErrInvalidParserType            = errors.New("invalid parser type")
-)
+func ParseWeb3(file io.Reader) (*Web3, error) {
+	dec := yaml.NewDecoder(file)
+	dec.KnownFields(true)
+	w := &Web3{}
+	err := dec.Decode(w)
+	if err != nil {
+		return nil, err
+	}
+	w.PrivateKey, err = crypto.HexToECDSA(w.RawPrivateKey)
+	return w, err
+}
 
 // ParseFeeds takes Reader, and uses yaml library to decode file into Feeds struct
 func ParseFeeds(file io.Reader) (*Feeds, error) {
