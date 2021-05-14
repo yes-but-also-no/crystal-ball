@@ -27,7 +27,8 @@ interface IOrakuruCore {
         address indexed callbackAddr,
         Type aggrType,
         uint8 precision,
-        uint256 executionTimestamp
+        uint256 executionTimestamp,
+        uint256 timestamp
     );
 
     event Submitted(
