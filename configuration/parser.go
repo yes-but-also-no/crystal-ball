@@ -17,6 +17,7 @@ var (
 	ErrNoSources                    = errors.New("no sources")
 	ErrInvalidSourceMethod          = errors.New("invalid source method")
 	ErrInvalidParserType            = errors.New("invalid parser type")
+	ErrInvalidFilterMode            = errors.New("invalid filter mode")
 )
 
 // ParseRequests takes Reader, and uses yaml library to decode file into Requests struct
@@ -31,6 +32,12 @@ func ParseRequests(file io.Reader) (*Requests, error) {
 	r.Timeout, err = time.ParseDuration(r.RawTimeout)
 	if err != nil {
 		return nil, err
+	}
+	if r.Filter.Mode == "" {
+		r.Filter.Mode = "blacklist"
+	}
+	if r.Filter.Mode != "blacklist" && r.Filter.Mode != "whitelist" {
+		return nil, ErrInvalidFilterMode
 	}
 	//r.DataFilter.Delay, err = time.ParseDuration(r.DataFilter.RawDelay)
 	//if err != nil {

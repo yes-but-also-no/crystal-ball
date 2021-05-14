@@ -4,6 +4,6 @@ timeout: "5s"
 #  samples: 2
 #  delay: "10ms"
 filter:
-  mode: whitelist
+  mode: blacklist
   domains:
-  - "coingecko.com"
+  - "localhost"
