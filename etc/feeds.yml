@@ -1,3 +1,7 @@
+#
+# At the present time, this configuration file is unused. It doesn't need to be present in resulting etc directory
+#
+
 sources:
   coingecko:
     url: "https://api.coingecko.com/api/v3/simple/price?ids=${coin}&vs_currencies=${base}"
