@@ -22,6 +22,7 @@ import (
 	"math/big"
 	"net/http"
 	"strconv"
+	"sync"
 	"time"
 )
 
@@ -40,6 +41,8 @@ type Node struct {
 	Core        *contracts.IOrakuruCore
 	Registry    *contracts.IAddressRegistry
 	Staking     *contracts.IStaking
+
+	FulfillmentMutex *sync.Mutex
 }
 
 func (n *Node) Start() error {
@@ -65,6 +68,7 @@ func (n *Node) Start() error {
 	n.Client = c
 	n.CoreAddress = common.HexToAddress(n.Web3.OrakuruCore)
 	n.Core, err = contracts.NewIOrakuruCore(n.CoreAddress, n.Client)
+	n.FulfillmentMutex = &sync.Mutex{}
 	if err != nil {
 		return err
 	}
@@ -214,7 +218,9 @@ func (n *Node) execute(event *contracts.IOrakuruCoreRequested, executionTime tim
 		monitoring.FailedJobsCounter.Inc()
 		return
 	}
+	n.FulfillmentMutex.Lock()
 	tx, err := n.Core.SubmitResult(k, event.RequestId, resp)
+	n.FulfillmentMutex.Unlock()
 	if err != nil {
 		log.Error().Err(err).Caller().Msg("cannot submit transaction to the network")
 		monitoring.FailedJobsCounter.Inc()
