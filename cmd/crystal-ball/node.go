@@ -22,6 +22,7 @@ import (
 	"math/big"
 	"net/http"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 )
@@ -44,6 +45,12 @@ type Node struct {
 
 	FulfillmentMutex *sync.Mutex
 }
+
+const (
+	AggrTypeMostFrequent = iota
+	AggrTypeMedian
+	AggrTypeAverage
+)
 
 func (n *Node) Start() error {
 	address := crypto.PubkeyToAddress(n.Web3.PrivateKey.PublicKey)
@@ -187,6 +194,16 @@ func (n *Node) updateMonitoringBalance() {
 	}
 }
 
+func validateNumber(number *string) bool {
+	_, err := strconv.ParseFloat(*number, 64)
+	if err == nil {
+		return true
+	}
+	*number = strings.Replace(*number, ",", ".", 1)
+	_, err = strconv.ParseFloat(*number, 64)
+	return err == nil
+}
+
 func (n *Node) execute(event *contracts.IOrakuruCoreRequested, executionTime time.Time) {
 	monitoring.QueueGauge.Inc()
 	defer func() {
@@ -212,6 +229,16 @@ func (n *Node) execute(event *contracts.IOrakuruCoreRequested, executionTime tim
 		return
 	}
 	log.Trace().Str("id", hexutil.Encode(event.RequestId[:])).Str("result", resp).Msg("request executed successfully")
+	if event.AggrType == AggrTypeAverage || event.AggrType == AggrTypeMedian {
+		if !validateNumber(&resp) {
+			log.Warn().
+				Str("id", hexutil.Encode(event.RequestId[:])).
+				Str("result", resp).
+				Msg("wanted a number, got a string")
+			monitoring.FailedJobsCounter.Inc()
+			return
+		}
+	}
 	k, err := bind.NewKeyedTransactorWithChainID(n.Web3.PrivateKey, n.ChainID)
 	if err != nil {
 		log.Error().Err(err).Caller().Msg("cannot create keyed transactor")
@@ -269,6 +296,7 @@ func (n *Node) pushEvents(events [][32]byte, out chan<- *contracts.IOrakuruCoreR
 			DataSource:         req.DataSource,
 			Selector:           req.Selector,
 			ExecutionTimestamp: req.ExecutionTimestamp,
+			AggrType:           req.AggrType,
 		}
 	}
 }
