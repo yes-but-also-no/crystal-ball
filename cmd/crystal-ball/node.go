@@ -210,7 +210,7 @@ func (n *Node) execute(event *contracts.IOrakuruCoreRequested, executionTime tim
 		monitoring.QueueGauge.Dec()
 		monitoring.ExecutedJobsCounter.Inc()
 	}()
-	sleepUntil(executionTime)
+	sleepUntil(executionTime.Add(3 * time.Second))
 	log.Trace().Str("id", hexutil.Encode(event.RequestId[:])).Msg("executing request")
 	allowed, err := n.Requests.Filter.ValidateURL(event.DataSource)
 	if err != nil {

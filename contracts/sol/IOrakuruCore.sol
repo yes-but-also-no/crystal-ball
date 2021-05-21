@@ -32,13 +32,14 @@ interface IOrakuruCore {
     );
 
     event Submitted(
-        bytes32 requestId,
+        bytes32 indexed requestId,
         string submittedResult,
         bytes parsedResult,
-        address oracle
+        address indexed oracle,
+        uint256 timestamp
     );
-    event Fulfilled(bytes32 indexed requestId, bytes result);
-    event Canceled(bytes32 indexed requestId);
+    event Fulfilled(bytes32 indexed requestId, bytes result, uint256 timestamp);
+    event Canceled(bytes32 indexed requestId, uint256 timestamp);
 
     struct Request {
         bytes32 id;

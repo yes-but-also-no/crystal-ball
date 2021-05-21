@@ -281,7 +281,7 @@ func (_IAddressRegistry *IAddressRegistryCallerSession) GetStakingAddr() (common
 }
 
 // IOrakuruCoreABI is the input ABI used to generate the binding from.
-const IOrakuruCoreABI = "[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"requestId\",\"type\":\"bytes32\"}],\"name\":\"Canceled\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"requestId\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"result\",\"type\":\"bytes\"}],\"name\":\"Fulfilled\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"requestId\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"dataSource\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"selector\",\"type\":\"string\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"callbackAddr\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"enumIOrakuruCore.Type\",\"name\":\"aggrType\",\"type\":\"uint8\"},{\"indexed\":false,\"internalType\":\"uint8\",\"name\":\"precision\",\"type\":\"uint8\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"executionTimestamp\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"name\":\"Requested\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"requestId\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"submittedResult\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"parsedResult\",\"type\":\"bytes\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"oracle\",\"type\":\"address\"}],\"name\":\"Submitted\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"addressRegistry\",\"outputs\":[{\"internalType\":\"contractIAddressRegistry\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_requestId\",\"type\":\"bytes32\"}],\"name\":\"cancelRequest\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_requestId\",\"type\":\"bytes32\"}],\"name\":\"fulfillRequest\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_addr\",\"type\":\"address\"}],\"name\":\"getNonceFor\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getPendingRequests\",\"outputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_requestId\",\"type\":\"bytes32\"}],\"name\":\"getRequest\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"id\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"dataSource\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"selector\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"callbackAddr\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"executionTimestamp\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"isFulfilled\",\"type\":\"bool\"},{\"internalType\":\"enumIOrakuruCore.Type\",\"name\":\"aggrType\",\"type\":\"uint8\"},{\"internalType\":\"uint8\",\"name\":\"precision\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_requestId\",\"type\":\"bytes32\"}],\"name\":\"getResponses\",\"outputs\":[{\"components\":[{\"internalType\":\"bytes32\",\"name\":\"id\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"requestId\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"result\",\"type\":\"bytes\"},{\"internalType\":\"address\",\"name\":\"submittedBy\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"submittedAt\",\"type\":\"uint256\"}],\"internalType\":\"structIOrakuruCore.Response[]\",\"name\":\"\",\"type\":\"tuple[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_requestId\",\"type\":\"bytes32\"}],\"name\":\"getResultsBytes\",\"outputs\":[{\"internalType\":\"bytes[]\",\"name\":\"\",\"type\":\"bytes[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_requestId\",\"type\":\"bytes32\"}],\"name\":\"getResultsUint\",\"outputs\":[{\"internalType\":\"uint256[]\",\"name\":\"\",\"type\":\"uint256[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"_dataSource\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"_selector\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"_calldataAddr\",\"type\":\"address\"},{\"internalType\":\"enumIOrakuruCore.Type\",\"name\":\"_aggrType\",\"type\":\"uint8\"},{\"internalType\":\"uint8\",\"name\":\"_precision\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"_executionTimestamp\",\"type\":\"uint256\"}],\"name\":\"makeRequest\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_requestId\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"_result\",\"type\":\"string\"}],\"name\":\"submitResult\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
+const IOrakuruCoreABI = "[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"requestId\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"name\":\"Canceled\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"requestId\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"result\",\"type\":\"bytes\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"name\":\"Fulfilled\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"requestId\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"dataSource\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"selector\",\"type\":\"string\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"callbackAddr\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"enumIOrakuruCore.Type\",\"name\":\"aggrType\",\"type\":\"uint8\"},{\"indexed\":false,\"internalType\":\"uint8\",\"name\":\"precision\",\"type\":\"uint8\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"executionTimestamp\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"name\":\"Requested\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"requestId\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"submittedResult\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"parsedResult\",\"type\":\"bytes\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"oracle\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"name\":\"Submitted\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"addressRegistry\",\"outputs\":[{\"internalType\":\"contractIAddressRegistry\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_requestId\",\"type\":\"bytes32\"}],\"name\":\"cancelRequest\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_requestId\",\"type\":\"bytes32\"}],\"name\":\"fulfillRequest\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_addr\",\"type\":\"address\"}],\"name\":\"getNonceFor\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getPendingRequests\",\"outputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_requestId\",\"type\":\"bytes32\"}],\"name\":\"getRequest\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"id\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"dataSource\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"selector\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"callbackAddr\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"executionTimestamp\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"isFulfilled\",\"type\":\"bool\"},{\"internalType\":\"enumIOrakuruCore.Type\",\"name\":\"aggrType\",\"type\":\"uint8\"},{\"internalType\":\"uint8\",\"name\":\"precision\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_requestId\",\"type\":\"bytes32\"}],\"name\":\"getResponses\",\"outputs\":[{\"components\":[{\"internalType\":\"bytes32\",\"name\":\"id\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"requestId\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"result\",\"type\":\"bytes\"},{\"internalType\":\"address\",\"name\":\"submittedBy\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"submittedAt\",\"type\":\"uint256\"}],\"internalType\":\"structIOrakuruCore.Response[]\",\"name\":\"\",\"type\":\"tuple[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_requestId\",\"type\":\"bytes32\"}],\"name\":\"getResultsBytes\",\"outputs\":[{\"internalType\":\"bytes[]\",\"name\":\"\",\"type\":\"bytes[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_requestId\",\"type\":\"bytes32\"}],\"name\":\"getResultsUint\",\"outputs\":[{\"internalType\":\"uint256[]\",\"name\":\"\",\"type\":\"uint256[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"_dataSource\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"_selector\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"_calldataAddr\",\"type\":\"address\"},{\"internalType\":\"enumIOrakuruCore.Type\",\"name\":\"_aggrType\",\"type\":\"uint8\"},{\"internalType\":\"uint8\",\"name\":\"_precision\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"_executionTimestamp\",\"type\":\"uint256\"}],\"name\":\"makeRequest\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_requestId\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"_result\",\"type\":\"string\"}],\"name\":\"submitResult\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
 
 // IOrakuruCoreFuncSigs maps the 4-byte function signature to its string representation.
 var IOrakuruCoreFuncSigs = map[string]string{
@@ -855,12 +855,13 @@ func (it *IOrakuruCoreCanceledIterator) Close() error {
 // IOrakuruCoreCanceled represents a Canceled event raised by the IOrakuruCore contract.
 type IOrakuruCoreCanceled struct {
 	RequestId [32]byte
+	Timestamp *big.Int
 	Raw       types.Log // Blockchain specific contextual infos
 }
 
-// FilterCanceled is a free log retrieval operation binding the contract event 0x134fdd648feeaf30251f0157f9624ef8608ff9a042aad6d13e73f35d21d3f88d.
+// FilterCanceled is a free log retrieval operation binding the contract event 0xd44296913fbcdd73d01927e8e2f0a7a83e01e8561e2d0da36b4c9f2bec9cffb0.
 //
-// Solidity: event Canceled(bytes32 indexed requestId)
+// Solidity: event Canceled(bytes32 indexed requestId, uint256 timestamp)
 func (_IOrakuruCore *IOrakuruCoreFilterer) FilterCanceled(opts *bind.FilterOpts, requestId [][32]byte) (*IOrakuruCoreCanceledIterator, error) {
 
 	var requestIdRule []interface{}
@@ -875,9 +876,9 @@ func (_IOrakuruCore *IOrakuruCoreFilterer) FilterCanceled(opts *bind.FilterOpts,
 	return &IOrakuruCoreCanceledIterator{contract: _IOrakuruCore.contract, event: "Canceled", logs: logs, sub: sub}, nil
 }
 
-// WatchCanceled is a free log subscription operation binding the contract event 0x134fdd648feeaf30251f0157f9624ef8608ff9a042aad6d13e73f35d21d3f88d.
+// WatchCanceled is a free log subscription operation binding the contract event 0xd44296913fbcdd73d01927e8e2f0a7a83e01e8561e2d0da36b4c9f2bec9cffb0.
 //
-// Solidity: event Canceled(bytes32 indexed requestId)
+// Solidity: event Canceled(bytes32 indexed requestId, uint256 timestamp)
 func (_IOrakuruCore *IOrakuruCoreFilterer) WatchCanceled(opts *bind.WatchOpts, sink chan<- *IOrakuruCoreCanceled, requestId [][32]byte) (event.Subscription, error) {
 
 	var requestIdRule []interface{}
@@ -917,9 +918,9 @@ func (_IOrakuruCore *IOrakuruCoreFilterer) WatchCanceled(opts *bind.WatchOpts, s
 	}), nil
 }
 
-// ParseCanceled is a log parse operation binding the contract event 0x134fdd648feeaf30251f0157f9624ef8608ff9a042aad6d13e73f35d21d3f88d.
+// ParseCanceled is a log parse operation binding the contract event 0xd44296913fbcdd73d01927e8e2f0a7a83e01e8561e2d0da36b4c9f2bec9cffb0.
 //
-// Solidity: event Canceled(bytes32 indexed requestId)
+// Solidity: event Canceled(bytes32 indexed requestId, uint256 timestamp)
 func (_IOrakuruCore *IOrakuruCoreFilterer) ParseCanceled(log types.Log) (*IOrakuruCoreCanceled, error) {
 	event := new(IOrakuruCoreCanceled)
 	if err := _IOrakuruCore.contract.UnpackLog(event, "Canceled", log); err != nil {
@@ -1000,12 +1001,13 @@ func (it *IOrakuruCoreFulfilledIterator) Close() error {
 type IOrakuruCoreFulfilled struct {
 	RequestId [32]byte
 	Result    []byte
+	Timestamp *big.Int
 	Raw       types.Log // Blockchain specific contextual infos
 }
 
-// FilterFulfilled is a free log retrieval operation binding the contract event 0x2f32b2ead759413df4558cb416e9b67b02081989ace899bb231416daae106b45.
+// FilterFulfilled is a free log retrieval operation binding the contract event 0x6275983343352535e2bea6cfe2c9b9194170888df271ea1df95e9ac77bb7a503.
 //
-// Solidity: event Fulfilled(bytes32 indexed requestId, bytes result)
+// Solidity: event Fulfilled(bytes32 indexed requestId, bytes result, uint256 timestamp)
 func (_IOrakuruCore *IOrakuruCoreFilterer) FilterFulfilled(opts *bind.FilterOpts, requestId [][32]byte) (*IOrakuruCoreFulfilledIterator, error) {
 
 	var requestIdRule []interface{}
@@ -1020,9 +1022,9 @@ func (_IOrakuruCore *IOrakuruCoreFilterer) FilterFulfilled(opts *bind.FilterOpts
 	return &IOrakuruCoreFulfilledIterator{contract: _IOrakuruCore.contract, event: "Fulfilled", logs: logs, sub: sub}, nil
 }
 
-// WatchFulfilled is a free log subscription operation binding the contract event 0x2f32b2ead759413df4558cb416e9b67b02081989ace899bb231416daae106b45.
+// WatchFulfilled is a free log subscription operation binding the contract event 0x6275983343352535e2bea6cfe2c9b9194170888df271ea1df95e9ac77bb7a503.
 //
-// Solidity: event Fulfilled(bytes32 indexed requestId, bytes result)
+// Solidity: event Fulfilled(bytes32 indexed requestId, bytes result, uint256 timestamp)
 func (_IOrakuruCore *IOrakuruCoreFilterer) WatchFulfilled(opts *bind.WatchOpts, sink chan<- *IOrakuruCoreFulfilled, requestId [][32]byte) (event.Subscription, error) {
 
 	var requestIdRule []interface{}
@@ -1062,9 +1064,9 @@ func (_IOrakuruCore *IOrakuruCoreFilterer) WatchFulfilled(opts *bind.WatchOpts, 
 	}), nil
 }
 
-// ParseFulfilled is a log parse operation binding the contract event 0x2f32b2ead759413df4558cb416e9b67b02081989ace899bb231416daae106b45.
+// ParseFulfilled is a log parse operation binding the contract event 0x6275983343352535e2bea6cfe2c9b9194170888df271ea1df95e9ac77bb7a503.
 //
-// Solidity: event Fulfilled(bytes32 indexed requestId, bytes result)
+// Solidity: event Fulfilled(bytes32 indexed requestId, bytes result, uint256 timestamp)
 func (_IOrakuruCore *IOrakuruCoreFilterer) ParseFulfilled(log types.Log) (*IOrakuruCoreFulfilled, error) {
 	event := new(IOrakuruCoreFulfilled)
 	if err := _IOrakuruCore.contract.UnpackLog(event, "Fulfilled", log); err != nil {
@@ -1308,27 +1310,48 @@ type IOrakuruCoreSubmitted struct {
 	SubmittedResult string
 	ParsedResult    []byte
 	Oracle          common.Address
+	Timestamp       *big.Int
 	Raw             types.Log // Blockchain specific contextual infos
 }
 
-// FilterSubmitted is a free log retrieval operation binding the contract event 0x87a989dac6bc925fc5a5656f502f963cdb1f2ad71370ac490d9ee0fbff837f4b.
+// FilterSubmitted is a free log retrieval operation binding the contract event 0x0e6a30477d982ffc8b01f549586b7f90fb7a42e549529709b591d1995af0e166.
 //
-// Solidity: event Submitted(bytes32 requestId, string submittedResult, bytes parsedResult, address oracle)
-func (_IOrakuruCore *IOrakuruCoreFilterer) FilterSubmitted(opts *bind.FilterOpts) (*IOrakuruCoreSubmittedIterator, error) {
+// Solidity: event Submitted(bytes32 indexed requestId, string submittedResult, bytes parsedResult, address indexed oracle, uint256 timestamp)
+func (_IOrakuruCore *IOrakuruCoreFilterer) FilterSubmitted(opts *bind.FilterOpts, requestId [][32]byte, oracle []common.Address) (*IOrakuruCoreSubmittedIterator, error) {
 
-	logs, sub, err := _IOrakuruCore.contract.FilterLogs(opts, "Submitted")
+	var requestIdRule []interface{}
+	for _, requestIdItem := range requestId {
+		requestIdRule = append(requestIdRule, requestIdItem)
+	}
+
+	var oracleRule []interface{}
+	for _, oracleItem := range oracle {
+		oracleRule = append(oracleRule, oracleItem)
+	}
+
+	logs, sub, err := _IOrakuruCore.contract.FilterLogs(opts, "Submitted", requestIdRule, oracleRule)
 	if err != nil {
 		return nil, err
 	}
 	return &IOrakuruCoreSubmittedIterator{contract: _IOrakuruCore.contract, event: "Submitted", logs: logs, sub: sub}, nil
 }
 
-// WatchSubmitted is a free log subscription operation binding the contract event 0x87a989dac6bc925fc5a5656f502f963cdb1f2ad71370ac490d9ee0fbff837f4b.
+// WatchSubmitted is a free log subscription operation binding the contract event 0x0e6a30477d982ffc8b01f549586b7f90fb7a42e549529709b591d1995af0e166.
 //
-// Solidity: event Submitted(bytes32 requestId, string submittedResult, bytes parsedResult, address oracle)
-func (_IOrakuruCore *IOrakuruCoreFilterer) WatchSubmitted(opts *bind.WatchOpts, sink chan<- *IOrakuruCoreSubmitted) (event.Subscription, error) {
+// Solidity: event Submitted(bytes32 indexed requestId, string submittedResult, bytes parsedResult, address indexed oracle, uint256 timestamp)
+func (_IOrakuruCore *IOrakuruCoreFilterer) WatchSubmitted(opts *bind.WatchOpts, sink chan<- *IOrakuruCoreSubmitted, requestId [][32]byte, oracle []common.Address) (event.Subscription, error) {
 
-	logs, sub, err := _IOrakuruCore.contract.WatchLogs(opts, "Submitted")
+	var requestIdRule []interface{}
+	for _, requestIdItem := range requestId {
+		requestIdRule = append(requestIdRule, requestIdItem)
+	}
+
+	var oracleRule []interface{}
+	for _, oracleItem := range oracle {
+		oracleRule = append(oracleRule, oracleItem)
+	}
+
+	logs, sub, err := _IOrakuruCore.contract.WatchLogs(opts, "Submitted", requestIdRule, oracleRule)
 	if err != nil {
 		return nil, err
 	}
@@ -1360,9 +1383,9 @@ func (_IOrakuruCore *IOrakuruCoreFilterer) WatchSubmitted(opts *bind.WatchOpts, 
 	}), nil
 }
 
-// ParseSubmitted is a log parse operation binding the contract event 0x87a989dac6bc925fc5a5656f502f963cdb1f2ad71370ac490d9ee0fbff837f4b.
+// ParseSubmitted is a log parse operation binding the contract event 0x0e6a30477d982ffc8b01f549586b7f90fb7a42e549529709b591d1995af0e166.
 //
-// Solidity: event Submitted(bytes32 requestId, string submittedResult, bytes parsedResult, address oracle)
+// Solidity: event Submitted(bytes32 indexed requestId, string submittedResult, bytes parsedResult, address indexed oracle, uint256 timestamp)
 func (_IOrakuruCore *IOrakuruCoreFilterer) ParseSubmitted(log types.Log) (*IOrakuruCoreSubmitted, error) {
 	event := new(IOrakuruCoreSubmitted)
 	if err := _IOrakuruCore.contract.UnpackLog(event, "Submitted", log); err != nil {
