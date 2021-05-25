@@ -35,13 +35,27 @@ func (v *Validators) AddScore(address common.Address, score uint64, delay uint64
 	v.requests[address].Add(v.requests[address], big.NewInt(1))
 }
 
+func (v *Validators) RegisterValidator(address common.Address) {
+	v.mutex.Lock()
+	defer v.mutex.Unlock()
+	v.scores[address] = 0
+	v.responseTimes[address] = big.NewInt(0)
+	v.requests[address] = big.NewInt(0)
+}
+
 func (v *Validators) Collect() Leaderboard {
 	v.mutex.RLock()
 	defer v.mutex.RUnlock()
 	result := make(Leaderboard, 0, len(v.scores))
 	for k, val := range v.scores {
-		average, _ := big.NewFloat(0).Quo(big.NewFloat(float64(v.responseTimes[k].Uint64())),
-			big.NewFloat(float64(v.requests[k].Uint64()))).Float64()
+		var average float64
+		if v.responseTimes[k].Uint64() != 0 {
+			average, _ = big.NewFloat(0).Quo(big.NewFloat(float64(v.responseTimes[k].Uint64())),
+				big.NewFloat(float64(v.requests[k].Uint64()))).Float64()
+		} else {
+			average = 0
+		}
+    
 		result = append(result, LeaderboardEntry{
 			Address:      k.Hex(),
 			Score:        val,

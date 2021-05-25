@@ -60,16 +60,54 @@ func main() {
 
 	validators := NewValidators()
 
+	regAddr, err := core.AddressRegistry(nil)
+	if err != nil {
+		log.Fatal().Err(err).Msg("could not get registry address")
+	}
+	registry, err := contracts.NewIAddressRegistry(regAddr, client)
+	if err != nil {
+		log.Fatal().Err(err).Msg("could not get instance of registry")
+	}
+	stakingAddr, err := registry.GetStakingAddr(nil)
+	if err != nil {
+		log.Fatal().Err(err).Msg("could not get staking address")
+	}
+	staking, err := contracts.NewIStaking(stakingAddr, client)
+	if err != nil {
+		log.Fatal().Err(err).Msg("could not get instance of staking")
+	}
+
+	registered, err := staking.FilterRegistered(nil, nil)
+	if err != nil {
+		log.Fatal().Err(err).Msg("could not get registered oracles")
+	}
+	unregistered, err := staking.FilterUnregistered(nil, nil)
+	if err != nil {
+		log.Fatal().Err(err).Msg("could not get unregistered oracles")
+	}
+
+	oracles := make(map[common.Address]bool)
+	for registered.Next() {
+		oracles[registered.Event.Oracle] = true
+	}
+	for unregistered.Next() {
+		delete(oracles, unregistered.Event.Oracle)
+	}
+
+	for k := range oracles {
+		validators.RegisterValidator(k)
+	}
 	requests, err := core.FilterFulfilled(nil, nil)
 	if err != nil {
 		log.Fatal().Err(err).Caller().Msg("cannot collect fulfilled requests")
 	}
 
 	sink := make(chan *contracts.IOrakuruCoreFulfilled, 500)
-	_, err = core.WatchFulfilled(nil, sink, nil)
+	f, err := core.WatchFulfilled(nil, sink, nil)
 	if err != nil {
 		log.Fatal().Err(err).Caller().Msg("could not subscribe for new events")
 	}
+	errChan := f.Err()
 
 	for requests.Next() {
 		// Empty answer = failed
@@ -93,23 +131,28 @@ func main() {
 	}
 
 	go func() {
-		for fulfill := range sink {
-			if len(fulfill.Result) == 0 {
-				continue
-			}
+		for {
+			select {
+			case fulfill := <-sink:
+				if len(fulfill.Result) == 0 {
+					continue
+				}
 
-			log.Info().Str("id", hexutil.Encode(requests.Event.RequestId[:])).Msg("processing new request")
-			resp, err := core.GetResponses(nil, fulfill.RequestId)
-			if err != nil {
-				log.Fatal().Err(err).Caller().Msg("cannot get responses from core contract")
-			}
-			req, err := core.GetRequest(nil, fulfill.RequestId)
-			if err != nil {
-				log.Fatal().Err(err).Caller().Msg("cannot get request from core contract")
-			}
-			for _, resp := range resp {
-				elapsed := big.NewInt(0).Sub(resp.SubmittedAt, req.ExecutionTimestamp)
-				validators.AddScore(resp.SubmittedBy, Score(elapsed.Uint64()), elapsed.Uint64())
+				log.Info().Str("id", hexutil.Encode(requests.Event.RequestId[:])).Msg("processing new request")
+				resp, err := core.GetResponses(nil, fulfill.RequestId)
+				if err != nil {
+					log.Fatal().Err(err).Caller().Msg("cannot get responses from core contract")
+				}
+				req, err := core.GetRequest(nil, fulfill.RequestId)
+				if err != nil {
+					log.Fatal().Err(err).Caller().Msg("cannot get request from core contract")
+				}
+				for _, resp := range resp {
+					elapsed := big.NewInt(0).Sub(resp.SubmittedAt, req.ExecutionTimestamp)
+					validators.AddScore(resp.SubmittedBy, Score(elapsed.Uint64()), elapsed.Uint64())
+				}
+			case err := <-errChan:
+				log.Fatal().Err(err).Msg("subscription has returned an error")
 			}
 		}
 	}()

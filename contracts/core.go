@@ -1340,7 +1340,6 @@ func (_IOrakuruCore *IOrakuruCoreFilterer) FilterSubmitted(opts *bind.FilterOpts
 //
 // Solidity: event Submitted(bytes32 indexed requestId, string submittedResult, bytes parsedResult, address indexed oracle, uint256 timestamp)
 func (_IOrakuruCore *IOrakuruCoreFilterer) WatchSubmitted(opts *bind.WatchOpts, sink chan<- *IOrakuruCoreSubmitted, requestId [][32]byte, oracle []common.Address) (event.Subscription, error) {
-
 	var requestIdRule []interface{}
 	for _, requestIdItem := range requestId {
 		requestIdRule = append(requestIdRule, requestIdItem)
@@ -1396,7 +1395,7 @@ func (_IOrakuruCore *IOrakuruCoreFilterer) ParseSubmitted(log types.Log) (*IOrak
 }
 
 // IStakingABI is the input ABI used to generate the binding from.
-const IStakingABI = "[{\"inputs\":[],\"name\":\"getThresholdNum\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_oracle\",\"type\":\"address\"}],\"name\":\"isRegisteredOracle\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"registeredOraclesNum\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]"
+const IStakingABI = "[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"oracle\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"name\":\"Registered\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"oracle\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"name\":\"Unregistered\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"getThresholdNum\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_oracle\",\"type\":\"address\"}],\"name\":\"isRegisteredOracle\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"registeredOraclesNum\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]"
 
 // IStakingFuncSigs maps the 4-byte function signature to its string representation.
 var IStakingFuncSigs = map[string]string{
@@ -1638,4 +1637,294 @@ func (_IStaking *IStakingSession) RegisteredOraclesNum() (*big.Int, error) {
 // Solidity: function registeredOraclesNum() view returns(uint256)
 func (_IStaking *IStakingCallerSession) RegisteredOraclesNum() (*big.Int, error) {
 	return _IStaking.Contract.RegisteredOraclesNum(&_IStaking.CallOpts)
+}
+
+// IStakingRegisteredIterator is returned from FilterRegistered and is used to iterate over the raw logs and unpacked data for Registered events raised by the IStaking contract.
+type IStakingRegisteredIterator struct {
+	Event *IStakingRegistered // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *IStakingRegisteredIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(IStakingRegistered)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(IStakingRegistered)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *IStakingRegisteredIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *IStakingRegisteredIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// IStakingRegistered represents a Registered event raised by the IStaking contract.
+type IStakingRegistered struct {
+	Oracle    common.Address
+	Timestamp *big.Int
+	Raw       types.Log // Blockchain specific contextual infos
+}
+
+// FilterRegistered is a free log retrieval operation binding the contract event 0x6f3bf3fa84e4763a43b3d23f9d79be242d6d5c834941ff4c1111b67469e1150c.
+//
+// Solidity: event Registered(address indexed oracle, uint256 timestamp)
+func (_IStaking *IStakingFilterer) FilterRegistered(opts *bind.FilterOpts, oracle []common.Address) (*IStakingRegisteredIterator, error) {
+
+	var oracleRule []interface{}
+	for _, oracleItem := range oracle {
+		oracleRule = append(oracleRule, oracleItem)
+	}
+
+	logs, sub, err := _IStaking.contract.FilterLogs(opts, "Registered", oracleRule)
+	if err != nil {
+		return nil, err
+	}
+	return &IStakingRegisteredIterator{contract: _IStaking.contract, event: "Registered", logs: logs, sub: sub}, nil
+}
+
+// WatchRegistered is a free log subscription operation binding the contract event 0x6f3bf3fa84e4763a43b3d23f9d79be242d6d5c834941ff4c1111b67469e1150c.
+//
+// Solidity: event Registered(address indexed oracle, uint256 timestamp)
+func (_IStaking *IStakingFilterer) WatchRegistered(opts *bind.WatchOpts, sink chan<- *IStakingRegistered, oracle []common.Address) (event.Subscription, error) {
+
+	var oracleRule []interface{}
+	for _, oracleItem := range oracle {
+		oracleRule = append(oracleRule, oracleItem)
+	}
+
+	logs, sub, err := _IStaking.contract.WatchLogs(opts, "Registered", oracleRule)
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(IStakingRegistered)
+				if err := _IStaking.contract.UnpackLog(event, "Registered", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseRegistered is a log parse operation binding the contract event 0x6f3bf3fa84e4763a43b3d23f9d79be242d6d5c834941ff4c1111b67469e1150c.
+//
+// Solidity: event Registered(address indexed oracle, uint256 timestamp)
+func (_IStaking *IStakingFilterer) ParseRegistered(log types.Log) (*IStakingRegistered, error) {
+	event := new(IStakingRegistered)
+	if err := _IStaking.contract.UnpackLog(event, "Registered", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// IStakingUnregisteredIterator is returned from FilterUnregistered and is used to iterate over the raw logs and unpacked data for Unregistered events raised by the IStaking contract.
+type IStakingUnregisteredIterator struct {
+	Event *IStakingUnregistered // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *IStakingUnregisteredIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(IStakingUnregistered)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(IStakingUnregistered)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *IStakingUnregisteredIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *IStakingUnregisteredIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// IStakingUnregistered represents a Unregistered event raised by the IStaking contract.
+type IStakingUnregistered struct {
+	Oracle    common.Address
+	Timestamp *big.Int
+	Raw       types.Log // Blockchain specific contextual infos
+}
+
+// FilterUnregistered is a free log retrieval operation binding the contract event 0x15f7469572dc44ee54c08cc4adf4e1031d7b6254626e8894015195a560039d09.
+//
+// Solidity: event Unregistered(address indexed oracle, uint256 timestamp)
+func (_IStaking *IStakingFilterer) FilterUnregistered(opts *bind.FilterOpts, oracle []common.Address) (*IStakingUnregisteredIterator, error) {
+
+	var oracleRule []interface{}
+	for _, oracleItem := range oracle {
+		oracleRule = append(oracleRule, oracleItem)
+	}
+
+	logs, sub, err := _IStaking.contract.FilterLogs(opts, "Unregistered", oracleRule)
+	if err != nil {
+		return nil, err
+	}
+	return &IStakingUnregisteredIterator{contract: _IStaking.contract, event: "Unregistered", logs: logs, sub: sub}, nil
+}
+
+// WatchUnregistered is a free log subscription operation binding the contract event 0x15f7469572dc44ee54c08cc4adf4e1031d7b6254626e8894015195a560039d09.
+//
+// Solidity: event Unregistered(address indexed oracle, uint256 timestamp)
+func (_IStaking *IStakingFilterer) WatchUnregistered(opts *bind.WatchOpts, sink chan<- *IStakingUnregistered, oracle []common.Address) (event.Subscription, error) {
+
+	var oracleRule []interface{}
+	for _, oracleItem := range oracle {
+		oracleRule = append(oracleRule, oracleItem)
+	}
+
+	logs, sub, err := _IStaking.contract.WatchLogs(opts, "Unregistered", oracleRule)
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(IStakingUnregistered)
+				if err := _IStaking.contract.UnpackLog(event, "Unregistered", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseUnregistered is a log parse operation binding the contract event 0x15f7469572dc44ee54c08cc4adf4e1031d7b6254626e8894015195a560039d09.
+//
+// Solidity: event Unregistered(address indexed oracle, uint256 timestamp)
+func (_IStaking *IStakingFilterer) ParseUnregistered(log types.Log) (*IStakingUnregistered, error) {
+	event := new(IStakingUnregistered)
+	if err := _IStaking.contract.UnpackLog(event, "Unregistered", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
 }

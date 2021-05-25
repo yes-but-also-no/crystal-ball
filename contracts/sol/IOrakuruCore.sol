@@ -15,6 +15,9 @@ interface IStaking {
     function registeredOraclesNum() external view returns (uint256);
 
     function getThresholdNum() external view returns (uint256);
+
+    event Registered(address indexed oracle, uint256 timestamp);
+    event Unregistered(address indexed oracle, uint256 timestamp);
 }
 
 interface IOrakuruCore {
