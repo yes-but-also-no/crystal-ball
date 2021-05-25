@@ -13,7 +13,6 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"math/big"
-	"math/rand"
 	"os"
 	"path"
 	"strings"
@@ -102,7 +101,7 @@ func fulfillEvent(core *contracts.IOrakuruCore, event *contracts.IOrakuruCoreReq
 	FulfillMutex.Unlock()
 	if err != nil {
 		log.Warn().Err(err).Caller().Msg("could not fulfill request the first time, retying in a random amount of seconds")
-		time.Sleep(time.Duration(rand.Intn(5)+2) * time.Second)
+		time.Sleep(5 * time.Second)
 		tx, err = core.FulfillRequest(k, event.RequestId)
 		if err != nil {
 			log.Error().Err(err).Caller().Msg("could not fulfill request the second time as well")
@@ -138,22 +137,42 @@ func runExecutor(web3 *configuration.Web3) error {
 		return err
 	}
 
-	pending, err := core.GetPendingRequests(nil)
-	if err != nil {
-		log.Error().Err(err).Caller().Msg("could not rewind old requests")
-	}
-	sink := make(chan *contracts.IOrakuruCoreRequested, len(pending)+100)
+	requests := make(map[[32]byte]bool)
 
-	_, err = core.WatchRequested(nil, sink, nil, nil)
-	if err != nil {
-		return err
-	}
-	go pushEvents(core, pending, sink)
+outer:
+	for {
+		pending, err := core.GetPendingRequests(nil)
+		if err != nil {
+			log.Error().Err(err).Caller().Msg("could not rewind old requests")
+			time.Sleep(5 * time.Second)
+			continue
+		}
+		sink := make(chan *contracts.IOrakuruCoreRequested, len(pending)+100)
 
-	for event := range sink {
-		event := event
-		log.Trace().Str("id", hexutil.Encode(event.RequestId[:])).Msg("received an event")
-		go fulfillEvent(core, event, web3.PrivateKey)
+		sub, err := core.WatchRequested(nil, sink, nil, nil)
+		if err != nil {
+			log.Error().Err(err).Caller().Msg("could not subscribe for new events")
+			time.Sleep(5 * time.Second)
+			continue
+		}
+		go pushEvents(core, pending, sink)
+
+		for {
+			select {
+			case event := <-sink:
+				go func() {
+					if _, ok := requests[event.RequestId]; ok {
+						return
+					}
+					requests[event.RequestId] = true
+					log.Trace().Str("id", hexutil.Encode(event.RequestId[:])).Msg("received an event")
+					fulfillEvent(core, event, web3.PrivateKey)
+					delete(requests, event.RequestId)
+				}()
+			case err := <-sub.Err():
+				log.Error().Err(err).Caller().Msg("broken connection")
+				continue outer
+			}
+		}
 	}
-	return nil
 }
