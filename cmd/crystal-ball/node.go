@@ -22,6 +22,7 @@ import (
 	"io"
 	"math/big"
 	"net/http"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -54,6 +55,10 @@ const (
 	AggrTypeMostFrequent = iota
 	AggrTypeMedian
 	AggrTypeAverage
+)
+
+var (
+	JSONPathHotfix = regexp.MustCompile("(?U)\\[\"(.+)\"]")
 )
 
 func (n *Node) Start() error {
@@ -143,6 +148,7 @@ func (n *Node) executeRequest(url, query string) (string, error) {
 	_ = resp.Body.Close()
 
 	if query[0] == '$' {
+		query = JSONPathHotfix.ReplaceAllString(query, ".$1")
 		q, err := jsonpath.Compile(query)
 		if err != nil {
 			return "", err
