@@ -12,6 +12,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/ethereum/go-ethereum/event"
 	"github.com/oliveagle/jsonpath"
 	"github.com/orakurudata/crystal-ball/cmd/crystal-ball/monitoring"
 	"github.com/orakurudata/crystal-ball/configuration"
@@ -44,6 +45,9 @@ type Node struct {
 	Staking     *contracts.IStaking
 
 	FulfillmentMutex *sync.Mutex
+
+	ActiveRequests      map[[32]byte]bool
+	ActiveRequestsMutex *sync.Mutex
 }
 
 const (
@@ -76,6 +80,8 @@ func (n *Node) Start() error {
 	n.CoreAddress = common.HexToAddress(n.Web3.OrakuruCore)
 	n.Core, err = contracts.NewIOrakuruCore(n.CoreAddress, n.Client)
 	n.FulfillmentMutex = &sync.Mutex{}
+	n.ActiveRequestsMutex = &sync.Mutex{}
+	n.ActiveRequests = make(map[[32]byte]bool)
 	if err != nil {
 		return err
 	}
@@ -209,6 +215,10 @@ func (n *Node) execute(event *contracts.IOrakuruCoreRequested, executionTime tim
 	defer func() {
 		monitoring.QueueGauge.Dec()
 		monitoring.ExecutedJobsCounter.Inc()
+
+		n.ActiveRequestsMutex.Lock()
+		delete(n.ActiveRequests, event.RequestId)
+		n.ActiveRequestsMutex.Unlock()
 	}()
 	sleepUntil(executionTime.Add(3 * time.Second))
 	log.Trace().Str("id", hexutil.Encode(event.RequestId[:])).Msg("executing request")
@@ -250,8 +260,15 @@ func (n *Node) execute(event *contracts.IOrakuruCoreRequested, executionTime tim
 	n.FulfillmentMutex.Unlock()
 	if err != nil {
 		log.Error().Err(err).Caller().Msg("cannot submit transaction to the network")
-		monitoring.FailedJobsCounter.Inc()
-		return
+		log.Warn().Msg("waiting 5 seconds before trying to submit the result again")
+		time.Sleep(5 * time.Second)
+		n.FulfillmentMutex.Lock()
+		tx, err = n.Core.SubmitResult(k, event.RequestId, resp)
+		n.FulfillmentMutex.Unlock()
+		if err != nil {
+			monitoring.FailedJobsCounter.Inc()
+			return
+		}
 	}
 	log.Info().Str("id", hexutil.Encode(event.RequestId[:])).Str("tx", tx.Hash().String()).Msg("request fulfilled")
 	//sleepUntil(fulfillmentTime)
@@ -299,43 +316,70 @@ func (n *Node) pushEvents(events [][32]byte, out chan<- *contracts.IOrakuruCoreR
 			AggrType:           req.AggrType,
 		}
 	}
+	log.Trace().Msg("past events were reloaded")
 }
 
 func (n *Node) RunRequestExecutor() {
-	log.Trace().Msg("reloading past events")
-
-	requests, err := n.Core.GetPendingRequests(nil)
-	if err != nil {
-		log.Error().Err(err).Caller().Msg("cannot get pending requests")
-	}
-
-	sink := make(chan *contracts.IOrakuruCoreRequested, len(requests)+100)
-	go n.pushEvents(requests, sink)
-
-	log.Trace().Msg("past events were reloaded")
-
-	// TODO: maybe we should unsubscribe when node exits
-	_, err = n.Core.WatchRequested(nil, sink, nil, nil)
-	if err != nil {
-		log.Fatal().Err(err).Caller().Msg("could not subscribe for new events")
-	}
-	log.Info().Msg("subscribed for new requests")
-
-	for event := range sink {
-		// Copy event to pass it into a goroutine
-		event := event
-
-		log.Trace().Str("id", hexutil.Encode(event.RequestId[:])).Msg("new request received")
-		executionTime := time.Unix(event.ExecutionTimestamp.Int64(), 0)
-		// FIXME: this time might change on mainnet
-		now := time.Now()
-		expire := executionTime.Add(1 * time.Minute)
-		if !expire.After(now) {
-			log.Trace().Str("id", hexutil.Encode(event.RequestId[:])).Time("now", now).Time("expire", expire).Msg("event is outdated")
-			// Event is expired, skip it
+	backoff := 5 * time.Second
+	for {
+		log.Trace().Msg("reloading past events")
+		requests, err := n.Core.GetPendingRequests(nil)
+		if err != nil {
+			log.Error().Err(err).Caller().Msg("cannot get pending requests")
+			log.Warn().Dur("backoff", backoff).Msg("waiting before trying again")
+			time.Sleep(backoff)
+			backoff += 5 * time.Second
 			continue
 		}
 
-		go n.execute(event, executionTime)
+		sink := make(chan *contracts.IOrakuruCoreRequested, len(requests)+100)
+		go n.pushEvents(requests, sink)
+
+		// TODO: maybe we should unsubscribe when node exits
+		sub, err := n.Core.WatchRequested(nil, sink, nil, nil)
+		if err != nil {
+			log.Error().Err(err).Caller().Msg("could not subscribe for new events")
+			log.Warn().Dur("backoff", backoff).Msg("waiting before trying again")
+			time.Sleep(backoff)
+			backoff += 5 * time.Second
+			continue
+		}
+		backoff = 5 * time.Second
+		log.Info().Msg("subscribed for new requests")
+		n.HandlerLoop(sub, sink)
+	}
+}
+
+func (n *Node) HandlerLoop(sub event.Subscription, sink chan *contracts.IOrakuruCoreRequested) {
+	for {
+		select {
+		case ev := <-sink:
+			n.ActiveRequestsMutex.Lock()
+			if _, ok := n.ActiveRequests[ev.RequestId]; ok {
+				continue
+			}
+			n.ActiveRequestsMutex.Unlock()
+
+			evt := ev
+			log.Trace().Str("id", hexutil.Encode(evt.RequestId[:])).Msg("new request received")
+			executionTime := time.Unix(evt.ExecutionTimestamp.Int64(), 0)
+			// FIXME: this time might change on mainnet
+			now := time.Now()
+			expire := executionTime.Add(1 * time.Minute)
+			if !expire.After(now) {
+				log.Trace().Str("id", hexutil.Encode(evt.RequestId[:])).Time("now", now).Time("expire", expire).Msg("event is outdated")
+				// Event is expired, skip it
+				continue
+			}
+
+			n.ActiveRequestsMutex.Lock()
+			n.ActiveRequests[ev.RequestId] = true
+			n.ActiveRequestsMutex.Unlock()
+			go n.execute(evt, executionTime)
+		case err := <-sub.Err():
+			log.Error().Err(err).Caller().Msg("failed receiving events")
+			sub.Unsubscribe()
+			return
+		}
 	}
 }
