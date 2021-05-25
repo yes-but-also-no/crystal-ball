@@ -157,7 +157,7 @@ func main() {
 		}
 	}()
 
-	http.HandleFunc("/leaderboard", func(writer http.ResponseWriter, request *http.Request) {
+	http.HandleFunc("/stats", func(writer http.ResponseWriter, request *http.Request) {
 		leaderboard := validators.Collect()
 		data, _ := json.Marshal(leaderboard)
 		writer.Header().Add("Content-Type", "application/json")
