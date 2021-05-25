@@ -22,7 +22,7 @@ Recommended way of running a node is through Docker. You'll need to create confi
 $ docker run -v /absolute/path/to/etc:/orakuru/etc -d \ # Path to configuration
              -e CB_LOG_LEVEL=trace \ # Enable debug logging
              --name "crystal-ball" \ # Set name for container
-             ghcr.io/orakurudata/crystal-ball:v0.2.1
+             ghcr.io/orakurudata/crystal-ball:v0.2.2
 ```
 
 **Notice:** before running this command, you need to create a configuration directory somewhere on your machine, copy [Web3](etc/web3.yml) and [Requests](etc/requests.yml) configuration files to that directory, and modify them (change web3 endpoint, private key). After that, replace `/absolute/path/to/etc` with an absolute path to your newly created configuration directory. 
