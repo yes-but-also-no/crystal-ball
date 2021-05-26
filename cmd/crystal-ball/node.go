@@ -136,7 +136,11 @@ func (n *Node) executeRequest(url, query string) (string, error) {
 	c.Timeout = n.Requests.Timeout
 	resp, err := c.Do(r)
 	if err != nil {
-		return "", err
+		time.Sleep(200 * time.Millisecond)
+		resp, err = c.Do(r)
+		if err != nil {
+			return "", err
+		}
 	}
 	if resp.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("request execution failed, http status %d", resp.StatusCode)
@@ -357,6 +361,9 @@ func (n *Node) RunRequestExecutor() {
 }
 
 func (n *Node) HandlerLoop(sub event.Subscription, sink chan *contracts.IOrakuruCoreRequested) {
+	// As far as we I can tell, sometimes nodes drop long-term subscriptions without any notification.
+	// We'll resubscribe every 10 hours.
+	ticker := time.Tick(10 * time.Hour)
 	for {
 		select {
 		case ev := <-sink:
@@ -384,6 +391,10 @@ func (n *Node) HandlerLoop(sub event.Subscription, sink chan *contracts.IOrakuru
 			go n.execute(evt, executionTime)
 		case err := <-sub.Err():
 			log.Error().Err(err).Caller().Msg("failed receiving events")
+			sub.Unsubscribe()
+			return
+		case <-ticker:
+			log.Info().Msg("performing re-subscription to keep connection durable")
 			sub.Unsubscribe()
 			return
 		}
