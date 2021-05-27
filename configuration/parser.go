@@ -1,6 +1,7 @@
 package configuration
 
 import (
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -38,6 +39,9 @@ func ParseRequests(file io.Reader) (*Requests, error) {
 	}
 	if r.Filter.Mode != "blacklist" && r.Filter.Mode != "whitelist" {
 		return nil, ErrInvalidFilterMode
+	}
+	if r.RawSecretKey != "" {
+		r.SecretKey, err = base64.StdEncoding.DecodeString(r.RawSecretKey)
 	}
 	//r.DataFilter.Delay, err = time.ParseDuration(r.DataFilter.RawDelay)
 	//if err != nil {

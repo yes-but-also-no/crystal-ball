@@ -9,9 +9,10 @@ type Requests struct {
 	// RawTimeout contains HTTP request timeout in time.Duration format
 	RawTimeout string `yaml:"timeout"`
 	// Timeout contains parsed RawTimeout
-	Timeout time.Duration `yaml:"-"`
+	Timeout      time.Duration `yaml:"-"`
+	RawSecretKey string        `yaml:"secret_key"`
 	// SecretKey contains base64 of the secret key
-	SecretKey []byte `yaml:"secret_key"`
+	SecretKey []byte `yaml:"-"`
 	// DataFilter contains configuration for random data prevention filter
 	//DataFilter DataFilter `yaml:"data_filter"`
 }
