@@ -250,6 +250,21 @@ func validateNumber(number *string) bool {
 	return err == nil
 }
 
+// Gets the last block time
+func getLastBlockTime(client *ethclient.Client) uint64 {
+	// Get latest block header
+	header, err := client.HeaderByNumber(context.Background(), nil)
+
+	// Return zero if failed
+	if err != nil {
+		log.Warn().Err(err).Caller().Msg("Unable to get current block")
+		return 0
+	}
+
+	// Return block time
+	return header.Time
+}
+
 func (n *Node) execute(event *contracts.IOrakuruCoreRequested, executionTime time.Time) {
 	monitoring.QueueGauge.Inc()
 	defer func() {
@@ -260,8 +275,8 @@ func (n *Node) execute(event *contracts.IOrakuruCoreRequested, executionTime tim
 		delete(n.ActiveRequests, event.RequestId)
 		n.ActiveRequestsMutex.Unlock()
 	}()
-	sleepUntil(executionTime.Add(3 * time.Second))
-	log.Trace().Str("id", hexutil.Encode(event.RequestId[:])).Msg("executing request")
+
+	// Perform validation immediately upon receiving request
 	allowed, err := n.Requests.Filter.ValidateURL(event.DataSource)
 	if err != nil {
 		log.Warn().Err(err).Caller().Msg("url validation failed, possibly an invalid request - ignoring")
@@ -272,13 +287,20 @@ func (n *Node) execute(event *contracts.IOrakuruCoreRequested, executionTime tim
 		log.Warn().Msg("request violates security policy - ignoring")
 		return
 	}
+
+	// Sleep until execution time
+	sleepUntil(executionTime)
+
+	// Perform execution like normal
+	log.Trace().Str("id", hexutil.Encode(event.RequestId[:])).Msg("executing request")
+	
 	resp, err := n.executeRequest(event.DataSource, event.Selector)
 	if err != nil {
 		log.Warn().Err(err).Caller().Msg("request execution failed")
 		monitoring.FailedJobsCounter.Inc()
 		return
 	}
-	log.Trace().Str("id", hexutil.Encode(event.RequestId[:])).Str("result", resp).Msg("request executed successfully")
+	log.Trace().Str("id", hexutil.Encode(event.RequestId[:])).Str("result", resp).Msg("request executed successfully. waiting to submit.")
 	if event.AggrType == AggrTypeAverage || event.AggrType == AggrTypeMedian {
 		if !validateNumber(&resp) {
 			log.Warn().
@@ -289,6 +311,27 @@ func (n *Node) execute(event *contracts.IOrakuruCoreRequested, executionTime tim
 			return
 		}
 	}
+
+	// wait for current last block to reach execution timestamp or greater
+	for {
+		// Get last block time
+		lastBlockTime := getLastBlockTime(n.Client)
+
+		// If its an error, just sleep 3 seconds like before
+		if lastBlockTime == 0 {
+			time.Sleep(3 * time.Second)
+			break
+		}
+
+		// If last block's time implies valid submission on next block, submit
+		if lastBlockTime >= (uint64)(executionTime.Unix()) {
+			break
+		}
+
+		// Otherwise, sleep a little
+		time.Sleep(100 * time.Millisecond)
+	}
+
 	k, err := bind.NewKeyedTransactorWithChainID(n.Web3.PrivateKey, n.ChainID)
 	if err != nil {
 		log.Error().Err(err).Caller().Msg("cannot create keyed transactor")
