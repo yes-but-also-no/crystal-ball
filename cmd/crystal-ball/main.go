@@ -48,6 +48,9 @@ func main() {
 		log.Fatal().Err(err).Caller().Msg("failed to parse requests configuration")
 	}
 	_ = requestsFile.Close()
+	if len(requestsConfig.SecretKey) != 32 {
+		log.Warn().Msg("configuration file contains an invalid secret key")
+	}
 
 	web3File, err := os.Open(path.Join(configDirectory, "web3.yml"))
 	if err != nil {

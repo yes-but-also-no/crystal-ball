@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -17,6 +18,7 @@ import (
 	"github.com/orakurudata/crystal-ball/cmd/crystal-ball/monitoring"
 	"github.com/orakurudata/crystal-ball/configuration"
 	"github.com/orakurudata/crystal-ball/contracts"
+	"github.com/orakurudata/crystal-ball/secrets"
 	"github.com/rs/zerolog/log"
 	"github.com/shopspring/decimal"
 	"io"
@@ -59,6 +61,7 @@ const (
 
 var (
 	JSONPathHotfix = regexp.MustCompile("(?U)\\[\"(.+)\"]")
+	SecretRegexp   = regexp.MustCompile(`(?U)\$\$(?P<key>.+):(?P<data>.+)\$\$`)
 )
 
 func (n *Node) Start() error {
@@ -122,7 +125,34 @@ func (n *Node) Run() {
 	go n.updateMonitoringBalance()
 }
 
+func (n *Node) UnwrapSecrets(url string) (string, error) {
+	out := SecretRegexp.FindAllStringSubmatch(url, -1)
+	for _, match := range out {
+		source := match[0]
+		key, err := base64.StdEncoding.DecodeString(match[SecretRegexp.SubexpIndex("key")])
+		if err != nil {
+			return url, err
+		}
+		ciphertext, err := base64.StdEncoding.DecodeString(match[SecretRegexp.SubexpIndex("data")])
+		if err != nil {
+			return url, err
+		}
+		publicKey := secrets.PublicKey(key)
+		seed := secrets.Seed(n.Requests.SecretKey)
+		value, err := secrets.Decrypt(seed, publicKey, ciphertext)
+		if err != nil {
+			return url, err
+		}
+		url = strings.Replace(url, source, value, 1)
+	}
+	return url, nil
+}
+
 func (n *Node) executeRequest(url, query string) (string, error) {
+	url, err := n.UnwrapSecrets(url)
+	if err != nil {
+		log.Warn().Caller().Err(err).Msg("failed to unwrap secrets in URL")
+	}
 	r, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return "", err
