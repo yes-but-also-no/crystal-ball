@@ -251,18 +251,17 @@ func validateNumber(number *string) bool {
 }
 
 // Gets the last block time
-func getLastBlockTime(client *ethclient.Client) uint64 {
+func getLastBlockTime(client *ethclient.Client) (uint64, error) {
 	// Get latest block header
 	header, err := client.HeaderByNumber(context.Background(), nil)
 
 	// Return zero if failed
 	if err != nil {
-		log.Warn().Err(err).Caller().Msg("Unable to get current block")
-		return 0
+		return 0, err
 	}
 
 	// Return block time
-	return header.Time
+	return header.Time, nil
 }
 
 func (n *Node) execute(event *contracts.IOrakuruCoreRequested, executionTime time.Time) {
@@ -293,7 +292,7 @@ func (n *Node) execute(event *contracts.IOrakuruCoreRequested, executionTime tim
 
 	// Perform execution like normal
 	log.Trace().Str("id", hexutil.Encode(event.RequestId[:])).Msg("executing request")
-	
+
 	resp, err := n.executeRequest(event.DataSource, event.Selector)
 	if err != nil {
 		log.Warn().Err(err).Caller().Msg("request execution failed")
@@ -315,16 +314,16 @@ func (n *Node) execute(event *contracts.IOrakuruCoreRequested, executionTime tim
 	// wait for current last block to reach execution timestamp or greater
 	for {
 		// Get last block time
-		lastBlockTime := getLastBlockTime(n.Client)
-
+		lastBlockTime, err := getLastBlockTime(n.Client)
 		// If its an error, just sleep 3 seconds like before
-		if lastBlockTime == 0 {
+		if err != nil {
+			log.Warn().Err(err).Msg("could not get latest block time")
 			time.Sleep(3 * time.Second)
 			break
 		}
 
 		// If last block's time implies valid submission on next block, submit
-		if lastBlockTime >= (uint64)(executionTime.Unix()) {
+		if lastBlockTime >= uint64(executionTime.Unix()) {
 			break
 		}
 
